@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, jsonify, session, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 import mysql.connector
+from mysql.connector import Error
 import csv
 from datetime import datetime
 import io, os
@@ -7,14 +8,30 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# ✅ Conexión a la base de datos en Railway
-conexion = mysql.connector.connect(
-    host="ballast.proxy.rlwy.net",
-    user="root",
-    password="vXHqCOqIIRnoGkbQUChYlJHRwGreYPMo",
-    database="railway",
-    port=55572
-)
+# ✅ Función para conectar con la base de datos en Railway
+def conectar_bd():
+    try:
+        conexion = mysql.connector.connect(
+            host="ballast.proxy.rlwy.net",
+            user="root",
+            password="vXHqCOqIIRnoGkbQUChYlJHRwGreYPMo",
+            database="railway",
+            port=55572
+        )
+        if conexion.is_connected():
+            print("✅ Conexión exitosa a la base de datos MySQL en Railway.")
+            return conexion
+    except Error as e:
+        print("❌ Error al conectar a MySQL:", e)
+        return None
+
+# Crear conexión global
+conexion = conectar_bd()
+
+if not conexion:
+    print("⚠ No se pudo establecer conexión con la base de datos. Verifica credenciales o red.")
+
+
 
 # ------------------- RUTAS PRINCIPALES -------------------
 
@@ -22,16 +39,18 @@ conexion = mysql.connector.connect(
 def index():
     return render_template('index.html')
 
+
 @app.route('/verificar_matricula', methods=['POST'])
 def verificar_matricula():
     data = request.get_json()
     matricula = data.get("matricula")
 
+    conexion = conectar_bd()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("SELECT nombre, carrera, genero FROM estudiantes WHERE matricula = %s", (matricula,))
     resultado = cursor.fetchone()
-
     cursor.close()
+    conexion.close()
 
     if resultado:
         return jsonify({
@@ -42,6 +61,7 @@ def verificar_matricula():
         })
     else:
         return jsonify({"encontrado": False})
+
 
 @app.route('/registrar', methods=['POST'])
 def registrar():
@@ -55,16 +75,19 @@ def registrar():
     hora = ahora.time()
 
     try:
+        conexion = conectar_bd()
         cursor = conexion.cursor()
         sql = "INSERT INTO registro (matricula, nombre, carrera, genero, fecha, hora) VALUES (%s, %s, %s, %s, %s, %s)"
         valores = (matricula, nombre, carrera, genero, fecha, hora)
         cursor.execute(sql, valores)
         conexion.commit()
         cursor.close()
+        conexion.close()
         return jsonify({"status": "success", "message": "Registro guardado correctamente"})
     except Exception as e:
         print("⚠ Error al registrar:", e)
         return jsonify({"status": "error", "message": "No se pudo guardar el registro"})
+
 
 # ------------------- CARGA DE ESTUDIANTES -------------------
 
@@ -72,12 +95,15 @@ def registrar():
 def cargar_estudiantes():
     return render_template('cargar_estudiantes.html')
 
+
 @app.route('/agregar_estudiante', methods=['POST'])
 def agregar_estudiante():
     matricula = request.form.get('matricula')
     nombre = request.form.get('nombre')
     carrera = request.form.get('carrera')
     genero = request.form.get('genero', None)
+
+    conexion = conectar_bd()
     cursor = conexion.cursor()
 
     cursor.execute("SELECT * FROM estudiantes WHERE matricula = %s", (matricula,))
@@ -92,7 +118,9 @@ def agregar_estudiante():
         mensaje = "✅ Estudiante agregado correctamente."
 
     cursor.close()
+    conexion.close()
     return render_template("cargar_estudiantes.html", mensaje=mensaje)
+
 
 @app.route('/cargar_csv', methods=['POST'])
 def cargar_csv():
@@ -104,6 +132,7 @@ def cargar_csv():
     csvfile = archivo.read().decode('utf-8').splitlines()
     lector = csv.reader(csvfile, delimiter=',')
 
+    conexion = conectar_bd()
     cursor = conexion.cursor()
     for fila in lector:
         matricula, nombre, carrera, genero = fila
@@ -113,8 +142,10 @@ def cargar_csv():
         """, (matricula, nombre, carrera, genero))
     conexion.commit()
     cursor.close()
+    conexion.close()
 
     return render_template('cargar_estudiantes.html', mensaje="✅ Archivo cargado exitosamente")
+
 
 # ------------------- REPORTES -------------------
 
@@ -122,11 +153,13 @@ def cargar_csv():
 def reportes():
     return render_template('reportes.html')
 
+
 @app.route('/generar_reporte', methods=['POST'])
 def generar_reporte():
     fecha_inicio = request.form['fecha_inicio']
     fecha_fin = request.form['fecha_fin']
 
+    conexion = conectar_bd()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("""
         SELECT * FROM registro
@@ -135,11 +168,13 @@ def generar_reporte():
     """, (fecha_inicio, fecha_fin))
     registros = cursor.fetchall()
     cursor.close()
+    conexion.close()
 
     if not registros:
         return render_template('reportes.html', mensaje="⚠ No se encontraron registros en ese periodo.")
     mensaje = f"✅ Se encontraron {len(registros)} registros entre {fecha_inicio} y {fecha_fin}."
     return render_template('reportes.html', mensaje=mensaje)
+
 
 @app.route('/generar_excel', methods=['GET'])
 def generar_excel():
@@ -149,6 +184,7 @@ def generar_excel():
     if not inicio or not fin:
         return "Faltan fechas", 400
 
+    conexion = conectar_bd()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("""
         SELECT matricula, nombre, carrera, fecha, hora, genero
@@ -158,6 +194,7 @@ def generar_excel():
     """, (inicio, fin))
     registros = cursor.fetchall()
     cursor.close()
+    conexion.close()
 
     if not registros:
         return "No hay registros para ese periodo", 404
@@ -173,19 +210,24 @@ def generar_excel():
     return send_file(output, as_attachment=True, download_name=nombre_archivo,
                      mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
+
 # ------------------- CONFIGURACIÓN Y USUARIOS -------------------
 
 @app.route("/configuracion")
 def configuracion():
     return render_template("configuracion.html")
 
+
 @app.route("/obtener_usuarios")
 def obtener_usuarios():
+    conexion = conectar_bd()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("SELECT * FROM usuarios")
     usuarios = cursor.fetchall()
     cursor.close()
+    conexion.close()
     return jsonify({"status": "ok", "usuarios": usuarios})
+
 
 @app.route("/crear_usuario", methods=["POST"])
 def crear_usuario():
@@ -195,6 +237,7 @@ def crear_usuario():
     contrasena = data.get("contraseña")
     rol = data.get("rol")
 
+    conexion = conectar_bd()
     cursor = conexion.cursor()
     cursor.execute(
         "INSERT INTO usuarios (nombre, usuario, contrasena, rol) VALUES (%s, %s, %s, %s)",
@@ -202,7 +245,9 @@ def crear_usuario():
     )
     conexion.commit()
     cursor.close()
+    conexion.close()
     return jsonify({"status": "ok", "mensaje": "✅ Usuario creado correctamente."})
+
 
 @app.route('/verificar_usuario', methods=['POST'])
 def verificar_usuario():
@@ -210,15 +255,18 @@ def verificar_usuario():
     usuario = data['usuario']
     contrasena = data['contrasena']
 
+    conexion = conectar_bd()
     cursor = conexion.cursor(dictionary=True)
     cursor.execute("SELECT * FROM usuarios WHERE usuario=%s AND contrasena=%s", (usuario, contrasena))
     resultado = cursor.fetchone()
     cursor.close()
+    conexion.close()
 
     if resultado:
         return jsonify({"status": "ok", "rol": resultado["rol"]})
     else:
         return jsonify({"status": "error", "mensaje": "Usuario o contraseña incorrectos."})
+
 
 # ------------------- PÁGINAS HTML -------------------
 
@@ -226,9 +274,14 @@ def verificar_usuario():
 def autorizacion():
     return render_template("autorizacion.html")
 
+
 @app.route("/ingreso")
 def ingreso():
     return render_template("ingreso.html")
+
+@app.route("/principal")
+def principal():
+    return render_template("principal.html")
 
 # ------------------- EJECUCIÓN -------------------
 
