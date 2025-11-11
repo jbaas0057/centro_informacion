@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cargar Estudiantes</title>
+    <style>
+        body {
+            background-color: #1B396A;
+            font-family: 'Noto Sans', sans-serif;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .titulo {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .subtitulo {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .control {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+
+        .contenedor {
+            margin-top: 40px;
+        }
+
+        input, button, select {
+            padding: 10px;
+            margin: 10px;
+            font-size: 18px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            cursor: pointer;
+            background-color: white;
+            color: #1B396A;
+            font-weight: bold;
+        }
+
+        .mensaje {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        img {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        /* 🔹 Estilos del menú de navegación */
+        .menu {
+            display: flex;
+            justify-content: right;
+            align-items: right;
+            gap: 20px;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            margin-right: 40px;
+        }
+
+        .menu a img {
+            width: 40px;
+            height: 40px;
+            border-radius: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .menu a img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Imagen de encabezado -->
+    <img src="/static/imagenes/encabezado1.png" alt="Encabezado">
+
+    <!-- 🔹 Menú de navegación agregado -->
+    <nav class="menu">
+        <a href="/principal"><img src="/static/imagenes/menu/principal.png" alt="Principal" title="Pantalla Principal"></a>
+        <a href="/"><img src="/static/imagenes/menu/inicio.png" alt="Inicio" title="Inicio"></a>
+        <a href="/reportes"><img src="/static/imagenes/menu/reporte.png" alt="Reportes" title="Reportes"></a>
+    </nav>
+
+    <div class="titulo">CENTRO DE INFORMACIÓN</div>
+    <div class="subtitulo">ANTONIO MEDIZ BOLIO</div>
+    <div class="control">CONTROL DE ACCESO</div>
+
+    <h1>Cargar Estudiantes</h1>
+
+<div class="contenedor">
+    <!-- ✅ Formulario para agregar estudiante manual -->
+<h2>Agregar estudiante individual</h2>
+<form action="/agregar_estudiante" method="POST">
+    <input type="text" name="matricula" placeholder="Matrícula" required>
+    <input type="text" name="nombre" placeholder="Nombre completo" required>
+
+    <!-- ✅ Lista desplegable de carreras -->
+    <select name="carrera" required>
+        <option value="" disabled selected>Selecciona una carrera</option>
+        <option>INGENIERÍA AMBIENTAL</option>
+        <option>INGENIERÍA BIOMÉDICA</option>
+        <option>INGENIERÍA BIOQUÍMICA</option>
+        <option>INGENIERÍA EN CIBERSEGURIDAD</option>
+        <option>INGENIERÍA CIVIL</option>
+        <option>INGENIERÍA ELÉCTRICA</option>
+        <option>INGENIERÍA ELECTRÓNICA</option>
+        <option>INGENIERÍA EN GESTIÓN EMPRESARIAL</option>
+        <option>INGENIERÍA INDUSTRIAL</option>
+        <option>INGENIERÍA MECÁNICA</option>
+        <option>INGENIERÍA QUÍMICA</option>
+        <option>INGENIERÍA EN SEMICONDUCTORES</option>
+        <option>INGENIERÍA EN SISTEMAS COMPUTACIONALES</option>
+        <option>LICENCIATURA EN ADMINISTRACIÓN</option>
+        <option>LICENCIATURA EN ADMINISTRACION (V)</option>
+        <option>MAESTRÍA EN GESTIÓN ADMINISTRATIVA</option>
+        <option>MAESTRÍA EN INGENIERÍA</option>
+        <option>MAESTRÍA EN CIENCIAS DE LOS ALIMENTOS Y BIOTECNOLOGIA</option>
+        <option>MAESTRÍA EN PLANIFICACIÓN DE EMPRESAS Y DESARROLLO REGIONAL</option>
+        <option>DOCTORADO EN CIENCIAS DE LOS ALIMENTOS Y BIOTECNOLOGÍA</option>
+    </select>
+
+    <!-- ✅ Género -->
+    <select name="genero" required>
+        <option value="" disabled selected>Seleccione género</option>
+        <option value="H">Hombre</option>
+        <option value="M">Mujer</option>
+        <option value="O">Otro</option>
+    </select>
+
+    <button type="submit">Guardar Estudiante</button>
+</form>
+
+
+    <!-- ✅ Formulario para cargar archivo CSV -->
+    <h2>Carga masiva (.csv)</h2>
+    <form action="/cargar_csv" method="POST" enctype="multipart/form-data">
+        <input type="file" name="archivo" accept=".csv" required>
+        <button type="submit">Cargar Archivo CSV</button>
+    </form>
+
+    <!-- ✅ Mensaje de resultado -->
+    {% if mensaje %}
+        <div class="mensaje" id="mensaje-alerta">{{ mensaje }}</div>
+    {% endif %}
+</div>
+
+<script>
+    const mensaje = document.getElementById("mensaje-alerta");
+    if (mensaje) {
+        setTimeout(() => {
+            mensaje.style.display = 'none';
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>

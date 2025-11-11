@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Acceso</title>
+    <style>
+        body {
+            background-color: #1B396A;
+            font-family: 'Noto Sans', sans-serif;
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .titulo { margin-top: 20px; font-weight: bold; font-size: 28px; }
+        .subtitulo { font-size: 26px; font-weight: bold; }
+        .control { font-size: 24px; font-weight: bold; margin-top: 30px; }
+        .fecha { margin-top: 20px; font-size: 32px; }
+        .hora { font-size: 32px; font-weight: bold; margin-top: 5px; }
+
+        form { margin-top: 40px; }
+        input[type="text"] {
+            padding: 20px; font-size: 22px; border-radius: 5px; border: none;
+        }
+        button {
+            padding: 20px 30px; font-size: 22px; border: none;
+            border-radius: 5px; cursor: pointer;
+            background-color: white; color: #1B396A; font-weight: bold;
+        }
+        img { width: 80%; margin-top: 20px;}
+
+        .menu {
+            margin-top: 15px;
+            margin-right: 40px;
+            display: flex;
+            justify-content: right;
+            gap: 20px;
+        }
+
+        .menu img {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 1;
+        }
+
+        .menu img:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <img src="/static/imagenes/encabezado1.png" alt="Encabezado">
+
+    <!-- Menú -->
+    <div class="menu" id="menu">
+        <a href="/principal"><img src="/static/imagenes/menu/principal.png" alt="Principal" title="Pantalla Principal"></a>
+        <a href="/cargar_estudiantes"><img src="/static/imagenes/menu/cargar.png" alt="Cargar Estudiantes" title="Cargar Estudiantes"></a>
+        <a href="/reportes"><img src="/static/imagenes/menu/reporte.png" alt="Reportes" title="Reportes"></a>
+    </div>
+
+    <div class="titulo">CENTRO DE INFORMACIÓN</div>
+    <div class="subtitulo">ANTONIO MEDIZ BOLIO</div>
+    <div class="control">CONTROL DE ACCESO</div>
+
+    <div class="fecha" id="fecha"></div>
+    <div class="hora" id="hora"></div>
+
+    <form id="formulario" onsubmit="return false;">
+        <input type="text" id="matricula" name="matricula" placeholder="Ingresa tu matrícula" required>
+        <button type="button" onclick="verificarMatricula()">INGRESAR</button>
+    </form>
+
+    <div id="mensaje" style="margin-top: 20px; font-size: 22px; font-weight: bold;"></div>
+
+    <script>
+        function actualizarFechaHora() {
+            const fechaElemento = document.getElementById("fecha");
+            const horaElemento = document.getElementById("hora");
+            const fechaActual = new Date();
+            const opcionesFecha = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+            fechaElemento.textContent = fechaActual.toLocaleDateString('es-MX', opcionesFecha);
+            horaElemento.textContent = fechaActual.toLocaleTimeString('es-MX');
+        }
+        actualizarFechaHora();
+        setInterval(actualizarFechaHora, 1000);
+    </script>
+
+    <script>
+        function verificarMatricula() {
+            const matricula = document.getElementById("matricula").value;
+            const mensajeDiv = document.getElementById("mensaje");
+
+            fetch("/verificar_matricula", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ matricula: matricula })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.encontrado) {
+                    mensajeDiv.innerHTML = `
+                        <p><strong>Bienvenido al Centro de Información</strong></p>
+                        <p>${data.nombre}</p>
+                        <p>${data.carrera}</p>
+                    `;
+                    mensajeDiv.style.color = "#D4AF37";
+                    mensajeDiv.style.fontWeight = "bold";
+
+                    fetch("/registrar", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: `matricula=${matricula}&nombre=${data.nombre}&carrera=${data.carrera}&genero=${data.genero}`
+                    });
+                } else {
+                    mensajeDiv.innerHTML = `<p><strong>Matrícula no registrada</strong></p>`;
+                    mensajeDiv.style.color = "red";
+                }
+
+                setTimeout(() => {
+                    mensajeDiv.innerHTML = "";
+                    document.getElementById("matricula").value = "";
+                    document.getElementById("matricula").focus();
+                }, 3000);
+            });
+        }
+    </script>
+
+    <!-- Bloque para confirmar cierre -->
+    <script>
+    let autorizado = false;
+
+    window.addEventListener("beforeunload", function (e) {
+        if (!autorizado) {
+            e.preventDefault();
+            e.returnValue = "";
+            window.open("/autorizacion", "Autorizacion", "width=400,height=500,top=200,left=600");
+            return "";
+        }
+    });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reportes de Accesos</title>
+    <style>
+        body {
+            background-color: #1B396A;
+            color: white;
+            font-family: 'Noto Sans', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .titulo {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .subtitulo {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .control {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        img {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .contenedor {
+            margin-top: 40px;
+        }
+
+        .input-fecha {
+            display: inline-block;
+            background-color: white;
+            color: #1B396A;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-right: 10px;
+        }
+
+        .input-fecha:hover {
+            transform: scale(1.05);
+            background-color: #e3e3e3;
+        }
+
+        /* ✅ Mostrar el input de fecha junto al botón */
+        input[type="date"] {
+            display: inline-block;
+            background-color: white;
+            color: #1B396A;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button {
+            background-color: white;
+            color: #1B396A;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            background-color: #f0f0f0;
+        }
+
+        .mensaje {
+            font-size: 20px;
+            margin-top: 25px;
+            font-weight: bold;
+            color: gold;
+        }
+
+        /* ✅ Estilos del menú */
+        .menu {
+            margin-top: 15px;
+            margin-right: 40px;
+            display: flex;
+            justify-content: right;
+            gap: 20px;
+        }
+
+        .menu img {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .menu img:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <img src="/static/imagenes/encabezado1.png" alt="Encabezado">
+
+    <!-- ✅ Menú de navegación -->
+    <div class="menu">
+        <a href="/principal"><img src="/static/imagenes/menu/principal.png" alt="Principal" title="Pantalla Principal"></a>
+        <a href="/"><img src="/static/imagenes/menu/inicio.png" alt="Inicio" title="Inicio"></a>
+        <a href="/cargar_estudiantes"><img src="/static/imagenes/menu/cargar.png" alt="Cargar Estudiantes" title="Cargar Estudiantes"></a>
+    </div>
+
+    <div class="titulo">CENTRO DE INFORMACIÓN</div>
+    <div class="subtitulo">ANTONIO MEDIZ BOLIO</div>
+    <div class="control">REPORTE DE ACCESOS</div>
+
+    <div class="contenedor">
+        <form id="form-reporte">
+            <div>
+                <div class="input-fecha" id="mostrar_inicio" onclick="document.getElementById('fecha_inicio').showPicker()">
+                    📅 Seleccionar fecha de inicio
+                </div>
+                <input type="date" id="fecha_inicio" name="inicio" required
+                    onchange="document.getElementById('mostrar_inicio').innerText = '📅 ' + this.value">
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="input-fecha" id="mostrar_fin" onclick="document.getElementById('fecha_fin').showPicker()">
+                    📅 Seleccionar fecha de fin
+                </div>
+                <input type="date" id="fecha_fin" name="fin" required
+                    onchange="document.getElementById('mostrar_fin').innerText = '📅 ' + this.value">
+            </div>
+
+            <button type="button" onclick="generarExcel()">📊 Generar reporte Excel</button>
+        </form>
+    </div>
+
+    <script>
+        function generarExcel() {
+            const inicio = document.getElementById('fecha_inicio').value;
+            const fin = document.getElementById('fecha_fin').value;
+
+            if(!inicio || !fin){
+                alert("Selecciona ambas fechas");
+                return;
+            }
+
+            // Descargar el archivo Excel
+            window.location.href = `/generar_excel?inicio=${inicio}&fin=${fin}`;
+        }
+    </script>
+
+</body>
+</html>

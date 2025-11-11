@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pantalla Principal</title>
+    <style>
+        body {
+            background-color: #1B396A;
+            color: white;
+            font-family: 'Noto Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        img.encabezado {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .titulo {
+            font-size: 30px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .subtitulo {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .contenedor {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        .boton {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s, filter 0.3s;
+        }
+
+        .boton img {
+            width: 220px;
+            height: 220px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            object-fit: cover;
+        }
+
+        .boton:hover {
+            transform: scale(1.08);
+            filter: brightness(1.1);
+        }
+
+        .etiqueta {
+            margin-top: 12px;
+            font-size: 22px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado institucional -->
+    <img src="/static/imagenes/encabezado1.png" class="encabezado" alt="Encabezado">
+    <div class="titulo">CENTRO DE INFORMACIÓN</div>
+    <div class="subtitulo">ANTONIO MEDIZ BOLIO</div>
+
+    <!-- Contenedor de botones -->
+    <div class="contenedor">
+        <a href="/" class="boton">
+            <img src="/static/imagenes/ingresar.jpg" alt="Ingresar">
+            <div class="etiqueta">Ingresar</div>
+        </a>
+
+        <a href="/cargar_estudiantes" class="boton">
+            <img src="/static/imagenes/agregar.jpg" alt="Agregar Estudiante">
+            <div class="etiqueta">Agregar</div>
+        </a>
+
+        <a href="/reportes" class="boton">
+            <img src="/static/imagenes/reporte.jpg" alt="Reportes">
+            <div class="etiqueta">Reporte</div>
+        </a>
+
+        <!-- Nuevo botón de Configuración -->
+        <a href="/configuracion" class="boton">
+            <img src="/static/imagenes/configuracion.png" alt="Configuración">
+            <div class="etiqueta">Configuración</div>
+        </a>
+    </div>
+
+</body>
+</html>

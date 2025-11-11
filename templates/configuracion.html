@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración del Sistema</title>
+    <style>
+        body {
+            background-color: #1B396A;
+            color: white;
+            font-family: 'Noto Sans', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        img {
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .titulo {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        .subtitulo {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .control {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .menu {
+            margin-top: 15px;
+            display: flex;
+            justify-content: right;
+            gap: 20px;
+            padding-right: 50px;
+        }
+
+        .menu img {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .menu img:hover {
+            transform: scale(1.1);
+        }
+
+        .config-container {
+            margin: 40px auto;
+            width: 85%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: left;
+        }
+
+        .config-section {
+            margin-bottom: 40px;
+        }
+
+        .config-section h3 {
+            color: gold;
+            margin-bottom: 10px;
+        }
+
+        .config-section button {
+            background-color: white;
+            color: #1B396A;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .config-section button:hover {
+            transform: scale(1.05);
+            background-color: #f0f0f0;
+        }
+
+        input[type="file"], input[type="text"], input[type="password"], select {
+            background-color: white;
+            color: #1B396A;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+
+        .contenedor-usuarios {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .contenedor-usuarios input, 
+        .contenedor-usuarios select {
+            width: 50%;
+            margin: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #1B396A;
+            color: gold;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .acciones button {
+            margin: 2px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .editar { background-color: gold; color: #1B396A; }
+        .eliminar { background-color: red; color: white; }
+    </style>
+</head>
+<body>
+
+    <img src="/static/imagenes/encabezado1.png" alt="Encabezado" id="encabezado">
+
+    <div class="menu">
+        <a href="/principal"><img src="/static/imagenes/menu/principal.png" alt="Principal" title="Pantalla Principal"></a>
+        <a href="/"><img src="/static/imagenes/menu/inicio.png" alt="Inicio" title="Inicio"></a>
+        <a href="/cargar_estudiantes"><img src="/static/imagenes/menu/cargar.png" alt="Cargar Estudiantes" title="Cargar Estudiantes"></a>
+        <a href="/reportes"><img src="/static/imagenes/menu/reporte.png" alt="Reportes" title="Reportes"></a>
+    </div>
+
+    <div class="titulo">CENTRO DE INFORMACIÓN</div>
+    <div class="subtitulo">ANTONIO MEDIZ BOLIO</div>
+    <div class="control">CONFIGURACIÓN DEL SISTEMA</div>
+
+    <div class="config-container">
+
+        <div class="config-section">
+            <h3>📁 Cambiar imágenes del sistema</h3>
+            <p>Puedes reemplazar el encabezado o los íconos del menú.</p>
+
+            <label for="tipo_imagen">Selecciona qué deseas cambiar:</label>
+            <select id="tipo_imagen">
+                <option value="encabezado">Encabezado</option>
+                <option value="menu">Imágenes del menú</option>
+            </select>
+
+            <br><br>
+            <input type="file" id="imagen_nueva">
+            <button onclick="subirImagen()">Subir imagen</button>
+        </div>
+
+        <div class="contenedor-usuarios">
+            <h2>👤 Gestión de Usuarios</h2>
+
+            <form id="formUsuarios">
+                <input type="text" id="nombre" placeholder="Nombre completo" required>
+                <input type="text" id="usuario" placeholder="Usuario" required>
+                <input type="password" id="contraseña" placeholder="Contraseña" required>
+
+                <select id="rol" required>
+                    <option value="" disabled selected>Selecciona un rol</option>
+                    <option value="admin">Administrador</option>
+                    <option value="usuario">Usuario</option>
+                </select>
+
+                <button type="submit">Crear usuario</button>
+            </form>
+
+            <h3>Lista de usuarios</h3>
+            <table id="tablaUsuarios">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Usuario</th>
+                        <th>Contraseña</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function cargarUsuarios() {
+            const res = await fetch("/obtener_usuarios");
+            const data = await res.json();
+            const tbody = document.querySelector("#tablaUsuarios tbody");
+            tbody.innerHTML = "";
+
+            if (data.status === "ok") {
+                data.usuarios.forEach(u => {
+                    const fila = document.createElement("tr");
+                    fila.innerHTML = `
+                        <td>${u.id}</td>
+                        <td><input type="text" value="${u.nombre}" id="nombre_${u.id}"></td>
+                        <td><input type="text" value="${u.usuario}" id="usuario_${u.id}"></td>
+                        <td><input type="password" value="${u.contraseña}" id="contraseña_${u.id}"></td>
+                        <td>
+                            <select id="rol_${u.id}">
+                                <option value="admin" ${u.rol === "admin" ? "selected" : ""}>Administrador</option>
+                                <option value="usuario" ${u.rol === "usuario" ? "selected" : ""}>Usuario</option>
+                            </select>
+                        </td>
+                        <td class="acciones">
+                            <button class="editar" onclick="modificarUsuario(${u.id})">💾 Guardar</button>
+                            <button class="eliminar" onclick="eliminarUsuario(${u.id})">🗑️ Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(fila);
+                });
+            } else {
+                alert("Error al cargar usuarios: " + data.mensaje);
+            }
+        }
+
+        async function modificarUsuario(id) {
+            const datos = {
+                id,
+                nombre: document.getElementById(`nombre_${id}`).value,
+                usuario: document.getElementById(`usuario_${id}`).value,
+                contraseña: document.getElementById(`contraseña_${id}`).value,
+                rol: document.getElementById(`rol_${id}`).value
+            };
+
+            const res = await fetch("/modificar_usuario", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(datos)
+            });
+            const data = await res.json();
+            alert(data.mensaje);
+            if (data.status === "ok") cargarUsuarios();
+        }
+
+        async function eliminarUsuario(id) {
+            if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+            const res = await fetch("/eliminar_usuario", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            alert(data.mensaje);
+            if (data.status === "ok") cargarUsuarios();
+        }
+
+        document.getElementById("formUsuarios").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const datos = {
+                nombre: nombre.value,
+                usuario: usuario.value,
+                contraseña: contraseña.value,
+                rol: rol.value
+            };
+            const res = await fetch("/crear_usuario", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(datos)
+            });
+            const data = await res.json();
+            alert(data.mensaje);
+            e.target.reset();
+            if (data.status === "ok") cargarUsuarios();
+        });
+
+        function subirImagen() {
+            const archivo = document.getElementById('imagen_nueva').files[0];
+            const tipo = document.getElementById('tipo_imagen').value;
+            if (!archivo) return alert("Selecciona una imagen primero.");
+            const formData = new FormData();
+            formData.append("imagen", archivo);
+            formData.append("tipo", tipo);
+            fetch("/subir_imagen", { method: "POST", body: formData })
+            .then(r => r.json()).then(d => alert(d.mensaje)).catch(e => alert(e));
+        }
+
+        cargarUsuarios();
+    </script>
+
+</body>
+</html>
