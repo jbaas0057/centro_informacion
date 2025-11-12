@@ -8,15 +8,15 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# ✅ Función para conectar con la base de datos en Railway
+# ✅ Función para conectar con la base de datos en Railway (actualizada)
 def conectar_bd():
     try:
         conexion = mysql.connector.connect(
-            host="ballast.proxy.rlwy.net",
+            host="gondola.proxy.rlwy.net",
             user="root",
-            password="vXHqCOqIIRnoGkbQUChYlJHRwGreYPMo",
+            password="qBzztAJTldTQXUXnjCEishRRRdbRcHZZ",
             database="railway",
-            port=55572
+            port=25249
         )
         if conexion.is_connected():
             print("✅ Conexión exitosa a la base de datos MySQL en Railway.")
@@ -25,12 +25,11 @@ def conectar_bd():
         print("❌ Error al conectar a MySQL:", e)
         return None
 
-# Crear conexión global
+# Crear conexión global inicial
 conexion = conectar_bd()
 
 if not conexion:
     print("⚠ No se pudo establecer conexión con la base de datos. Verifica credenciales o red.")
-
 
 
 # ------------------- RUTAS PRINCIPALES -------------------
@@ -279,11 +278,13 @@ def autorizacion():
 def ingreso():
     return render_template("ingreso.html")
 
+
 @app.route("/principal")
 def principal():
     return render_template("principal.html")
 
+
 # ------------------- EJECUCIÓN -------------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
